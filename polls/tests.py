@@ -1,3 +1,4 @@
+from django import urls
 from django.http import response
 from django.test import TestCase
 import datetime
@@ -36,7 +37,8 @@ class QuestionIndexViewTests(TestCase):
         self.assertContains(response, "No polls available.")
         self.assertQuerysetEqual(response.context['latest_question_list'], [])
     
-    def test_future_question_and_past_question(self): = create_question(question_text="Past question", days= -30)
+    def test_future_question_and_past_question(self): 
+        question = create_question(question_text="Past question", days= -30)
         create_question(question_text="Future question", days= 30)
         response = self.client.get(reverse('polls:index'))
         self.assertQuerysetEqual(
@@ -52,6 +54,22 @@ class QuestionIndexViewTests(TestCase):
             response.context['latest_question_list'], 
             [question2, question1],
         )
+
+
+class QuestionDetailIndexTests(TestCase):
+    def test_future_question(self):
+        
+        future_question = create_question(question_text="Future question.", days=5)
+        url = reverse('polls:detail', args= (future_question.id, ))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+        
+    def teste_past_question(self):
+        
+        past_question = create_question(question_text="Past Question.", days = -5)
+        url = reverse('polls:detail', args= (past_question.id, ))
+        response = self.client.get(url)
+        self.assertContains(response, past_question.question_text)
 
 class QuestionModelTests(TestCase):
 
